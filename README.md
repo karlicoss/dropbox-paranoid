@@ -8,6 +8,6 @@ Tool to get around some Dropbox inconveniences.
 2. You might want to run this script on cron, say, every 10 minutes so you get notified quickly.
 
 # Prerequisites
-* python3
+* python3.6
 * [optional] `python3-notify2` for nice desktop notifications
 

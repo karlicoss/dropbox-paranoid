@@ -2,7 +2,9 @@
 from config import DB_PATH
 from sys import exit
 from subprocess import check_output
-from os.path import realpath
+import os
+from os.path import realpath, basename
+import re
 
 def myfind(*args):
     res = check_output(['find', *args]).decode('ascii')
@@ -10,6 +12,8 @@ def myfind(*args):
         return []
     else:
         return res.split('\n')
+
+_EMACS_LOCKFILE_REGEX = re.compile(r'\w+@\w+.\d+:\d+')
 
 def get_errors():
     res = []
@@ -19,11 +23,22 @@ def get_errors():
     if len(conflicts) > 0:
         res.append(('Conflicts detected', '\n'.join(conflicts)))
 
+
+    def is_emacs_lockfile(f: str) -> bool:
+        if not basename(f).startswith('.#'):
+            return False
+        link = os.readlink(f)
+        return bool(_EMACS_LOCKFILE_REGEX.match(link))
+
+    def is_internal(f: str) -> bool:
+        return realpath(f).startswith(DB_PATH)
+
     # check for symlinks which point within Dropbox folder
     symlinks = myfind(DB_PATH, '-type', 'l')
-    internal = [s for s in symlinks if realpath(s).startswith(DB_PATH)]
-    if len(internal) > 0:
-        res.append(('Internal symlinks detected', '\n'.join(internal)))
+    symlinks = [l for l in symlinks if is_internal(l) and not is_emacs_lockfile(l)]
+
+    if len(symlinks) > 0:
+        res.append(('Internal symlinks detected', '\n'.join(symlinks)))
 
     return res
 
