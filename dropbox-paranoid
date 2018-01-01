@@ -1,0 +1,52 @@
+#!/usr/bin/env python3.6
+from config import DB_PATH
+from sys import exit
+from subprocess import check_output
+
+def myfind(*args):
+    res = check_output(['find', *args]).decode('ascii')
+    if len(res) == 0:
+        return []
+    else:
+        return res.split('\n')
+
+def get_errors():
+    res = []
+
+    # check for conflicts
+    conflicts = myfind(DB_PATH, '-iname', "'*conflicted copy*'")
+    if len(conflicts) > 0:
+        res.append(('Conflicts detected', '\n'.join(conflicts)))
+
+    # check for symlinks
+    symlinks = myfind(DB_PATH, '-type', 'l')
+    if len(symlinks) > 0:
+        res.append(('Symlinks detected', '\n'.join(symlinks)))
+
+    return res
+
+errors = get_errors()
+
+if len(errors) == 0:
+    print("DB paranoid: everything is ok")
+    exit(0)
+
+for summary, message in errors:
+    print(f"DB paranoid: {summary} {message}")
+
+try:
+    import notify2 # type: ignore
+    import os
+    os.environ['DISPLAY'] = ':0'
+    notify2.init('DB paranoid')
+    for summary, message in errors:
+        n = notify2.Notification(
+            summary=summary,
+            message=message,
+            icon='dialog-error',
+        )
+        n.show()
+except ImportError:
+    print("Install python3-notify2 to get desktop notifications")
+
+exit(1)
