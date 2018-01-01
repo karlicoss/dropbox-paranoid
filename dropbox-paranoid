@@ -2,6 +2,7 @@
 from config import DB_PATH
 from sys import exit
 from subprocess import check_output
+from os.path import realpath
 
 def myfind(*args):
     res = check_output(['find', *args]).decode('ascii')
@@ -18,10 +19,11 @@ def get_errors():
     if len(conflicts) > 0:
         res.append(('Conflicts detected', '\n'.join(conflicts)))
 
-    # check for symlinks
+    # check for symlinks which point within Dropbox folder
     symlinks = myfind(DB_PATH, '-type', 'l')
-    if len(symlinks) > 0:
-        res.append(('Symlinks detected', '\n'.join(symlinks)))
+    internal = [s for s in symlinks if realpath(s).startswith(DB_PATH)]
+    if len(internal) > 0:
+        res.append(('Internal symlinks detected', '\n'.join(internal)))
 
     return res
 
