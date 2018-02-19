@@ -1,1 +1,6 @@
-DP_PATH = "~/Dropbox"
+DB_PATH = "~/Dropbox"
+
+FIND_PATTERNS = {
+    'DB conflict'    : ['-iname', '*conflicted copy*'],
+    'Orgzly conflict': ['-iname', '*conflict*\.org'],
+}

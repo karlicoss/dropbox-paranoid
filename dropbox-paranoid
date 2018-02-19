@@ -1,13 +1,13 @@
 #!/usr/bin/env python3.6
-from config import DB_PATH
+from config import DB_PATH, FIND_PATTERNS
 from sys import exit
 from subprocess import check_output
 import os
 from os.path import realpath, basename
 import re
 
-def myfind(*args):
-    res = check_output(['find', *args]).decode('ascii')
+def myfind(path: str, *args):
+    res = check_output(['find', path, *args]).decode('ascii')
     if len(res) == 0:
         return []
     else:
@@ -19,9 +19,10 @@ def get_errors():
     res = []
 
     # check for conflicts
-    conflicts = myfind(DB_PATH, '-iname', "'*conflicted copy*'")
-    if len(conflicts) > 0:
-        res.append(('Conflicts detected', '\n'.join(conflicts)))
+    for desc, cmdline in FIND_PATTERNS.items():
+        conflicts = myfind(DB_PATH, *cmdline)
+        if len(conflicts) > 0:
+            res.append(('Conflicts detected ({})'.format(desc), '\n'.join(conflicts)))
 
 
     def is_emacs_lockfile(f: str) -> bool:
