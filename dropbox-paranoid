@@ -70,6 +70,7 @@ try:
             message=message,
             icon='dialog-error',
         )
+        n.set_urgency(notify2.URGENCY_CRITICAL)
         n.show()
 except ImportError:
     print("Install python3-notify2 to get desktop notifications")
