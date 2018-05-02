@@ -38,12 +38,9 @@ def get_errors():
         link = os.readlink(f)
         return bool(_EMACS_LOCKFILE_REGEX.match(link))
 
-    def is_internal(f: str) -> bool:
-        return realpath(f).startswith(DB_PATH)
-
     # check for symlinks which point within Dropbox folder
     symlinks = myfind(DB_PATH, '-type', 'l')
-    symlinks = [l for l in symlinks if is_internal(l) and not is_emacs_lockfile(l)]
+    symlinks = [l for l in symlinks if not is_emacs_lockfile(l)]
 
     if len(symlinks) > 0:
         res.append(('Internal symlinks detected', '\n'.join(symlinks)))
