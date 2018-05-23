@@ -62,10 +62,14 @@ if len(errors) == 0:
 for summary, message in errors:
     print(f"DB paranoid: {summary} {message}")
 
+import os
+os.environ['DISPLAY'] = ':0'
+
 try:
     import notify2 # type: ignore
-    import os
-    os.environ['DISPLAY'] = ':0'
+except ImportError:
+    print("Install python3-notify2 to get desktop notifications")
+else:
     notify2.init('DB paranoid')
     for summary, message in errors:
         n = notify2.Notification(
@@ -75,7 +79,5 @@ try:
         )
         n.set_urgency(notify2.URGENCY_CRITICAL)
         n.show()
-except ImportError:
-    print("Install python3-notify2 to get desktop notifications")
 
 exit(1)
