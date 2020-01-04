@@ -45,7 +45,7 @@ def get_errors():
             return False
 
     # check for symlinks which point within Dropbox folder
-    symlinks = myfind(DB_PATH, '-type', 'l')
+    symlinks = myfind(DB_PATH, "-not", "-path", join(DB_PATH, '.dropbox.cache') + '/*', '-type', 'l')
     symlinks = [l for l in symlinks if is_suspicious(l)]
 
     if len(symlinks) > 0:
